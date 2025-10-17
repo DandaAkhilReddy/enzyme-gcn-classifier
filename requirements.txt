@@ -1,0 +1,35 @@
+# Core Dependencies for Enzyme GCN Classifier
+
+# Deep Learning Framework
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Graph Neural Network Library
+torch-geometric>=2.3.0
+
+# For PyTorch Geometric dependencies
+torch-scatter>=2.1.0
+torch-sparse>=0.6.17
+torch-cluster>=1.6.1
+
+# Data Processing
+numpy>=1.24.0
+scikit-learn>=1.2.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Note: Installation instructions
+#
+# Option 1 - Install PyTorch first, then PyTorch Geometric:
+# pip install torch torchvision
+# pip install torch-geometric
+#
+# Option 2 - Use PyTorch Geometric installation helper:
+# pip install torch torchvision
+# pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
+# pip install torch-geometric
+#
+# Option 3 - Install all at once (may take longer):
+# pip install -r requirements.txt
