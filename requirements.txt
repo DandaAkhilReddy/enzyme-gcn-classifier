@@ -1,35 +1,81 @@
 # Core Dependencies for Enzyme GCN Classifier
+# Compatible with Python >=3.10
+# Installation: pip install -r requirements.txt
 
 # Deep Learning Framework
-torch>=2.0.0
+torch>=2.0.0,<3.0.0
 torchvision>=0.15.0
 
 # Graph Neural Network Library
 torch-geometric>=2.3.0
 
-# For PyTorch Geometric dependencies
+# PyTorch Geometric dependencies
+# Note: These may require specific wheel URLs depending on your PyTorch version and CUDA setup
+# For CPU: pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
+# For CUDA 11.8: pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cu118.html
 torch-scatter>=2.1.0
 torch-sparse>=0.6.17
 torch-cluster>=1.6.1
 
 # Data Processing
-numpy>=1.24.0
+numpy>=1.24.0,<2.0.0
 scikit-learn>=1.2.0
 
 # Visualization
 matplotlib>=3.7.0
 seaborn>=0.12.0
 
-# Note: Installation instructions
+# Configuration and CLI
+pydantic>=2.0.0
+pyyaml>=6.0
+typer>=0.9.0
+
+# Graph utilities
+networkx>=3.0.0
+
+# Development Dependencies (optional)
+# Install with: pip install -r requirements.txt -r requirements-dev.txt
+# Or: pip install -e ".[dev]" (if using pyproject.toml)
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Code Quality
+black>=23.0.0
+isort>=5.12.0
+ruff>=0.1.0
+mypy>=1.0.0
+
+# Installation Instructions:
 #
-# Option 1 - Install PyTorch first, then PyTorch Geometric:
-# pip install torch torchvision
-# pip install torch-geometric
+# 1. Create virtual environment:
+#    python -m venv .venv
+#    source .venv/bin/activate  # Linux/macOS
+#    .venv\Scripts\activate     # Windows
 #
-# Option 2 - Use PyTorch Geometric installation helper:
-# pip install torch torchvision
-# pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
-# pip install torch-geometric
+# 2. Upgrade pip:
+#    pip install --upgrade pip
 #
-# Option 3 - Install all at once (may take longer):
-# pip install -r requirements.txt
+# 3. Install PyTorch (choose your platform):
+#    # CPU-only
+#    pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#
+#    # CUDA 11.8 (if you have compatible NVIDIA GPU)
+#    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+#
+#    # CUDA 12.1
+#    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+#
+# 4. Install PyTorch Geometric dependencies:
+#    # CPU
+#    pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
+#
+#    # CUDA 11.8
+#    pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cu118.html
+#
+# 5. Install remaining dependencies:
+#    pip install -r requirements.txt
+#
+# 6. Verify installation:
+#    python -c "import torch; import torch_geometric; print(f'Torch: {torch.__version__}, PyG: {torch_geometric.__version__}')"

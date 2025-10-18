@@ -25,19 +25,32 @@ venv/
 env/
 ENV/
 .venv
+.venv/
 
 # PyTorch
 *.pth
 *.pt
 *.ckpt
 
-# Data
-data/
+# Data (keep structure, ignore contents)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/ENZYMES/
 *.zip
 *.tar.gz
 
-# Results (optional - comment out if you want to track results)
+# Keep demo data
+!data/demo/
+
+# Results and artifacts
 results/
+runs/
+artifacts/*.pt
+artifacts/*.pth
+artifacts/*.ckpt
+!artifacts/.gitkeep
 *.png
 *.npz
 
@@ -51,18 +64,38 @@ results/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-
-# Distribution / packaging
-.Python
-env/
-venv/
+*.ipynb_checkpoints/
 
 # pytest
 .pytest_cache/
 .coverage
 htmlcov/
+.tox/
 
 # MyPy
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Ruff
+.ruff_cache/
+
+# Environment files
+.env
+.env.local
+
+# OS
+Thumbs.db
+
+# Logs
+*.log
+!runs/.gitkeep
+
+# Temporary files
+*.tmp
+*.bak
+*~
+
+# Coverage
+.coverage.*
+coverage.xml

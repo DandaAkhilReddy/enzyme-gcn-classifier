@@ -1,541 +1,293 @@
-# Enzyme GCN Classifier 🧬 — 1‑Week Student Project
+# Enzyme GCN Classifier
 
-A small, focused GCN project completed in ~1 week. It classifies enzyme protein graphs into 6 EC classes using PyTorch Geometric.
+A graph neural network for classifying enzyme proteins into EC (Enzyme Commission) classes.
 
-## 📋 Project Overview
+## Problem Statement
 
-This project implements a **graph-level classification** task using Graph Neural Networks (GNN). Each protein structure is represented as a graph, where:
-- **Nodes** represent amino acids
-- **Edges** represent spatial proximity between amino acids
-- **Node features** contain chemical/structural properties
+This project implements a graph-level classification task for protein enzyme classification. Given a protein sequence, the system:
+1. Constructs a graph representation with amino acids as nodes
+2. Learns structural patterns using graph neural networks
+3. Predicts the enzyme class (EC1-EC6)
 
-The model learns to classify entire protein graphs into one of 6 enzyme classes.
+**Dataset**: ~600 protein structures from the ENZYMES dataset
+**Task**: 6-class classification (Oxidoreductases, Transferases, Hydrolases, Lyases, Isomerases, Ligases)
 
----
+## Assumptions and Limitations
 
-## 🗓️ What I Built This Week
+### Assumptions
+- Dataset contains approximately 600 proteins with 6 balanced classes
+- No 3D structural information is available
+- Sequences are represented using 20 standard amino acids
+- Minimum sequence length: 30 residues
 
-- **Goal**: Build a working graph classification pipeline end‑to‑end on the ENZYMES dataset.
-- **Deliverables**:
-  - `model.py`: 2‑layer GCN with global mean pooling and `log_softmax` outputs.
-  - `utils.py`: Data loading, training/eval loops, plots, and result saving.
-  - `main.py`: 200‑epoch training script with best‑model tracking and final reports.
-  - `test_local.py`: 10‑epoch smoke test to validate environment and training loop.
-  - Plots and outputs saved to `results/`.
+### Limitations
+- **Graph Construction**: Uses sequence-index edges (window + KNN), not contact maps or 3D coordinates
+- **Node Features**: Sequence-derived properties only (no pre-trained embeddings like ESM)
+- **Class Balance**: Assumes reasonably balanced classes; severe imbalance may require additional techniques
+- **Memory**: Very long sequences (>3000 residues) may cause OOM on modest hardware
 
-### ⏱️ Time & Scope
+### Mitigation Strategies
+- Configurable window size and KNN parameters for graph construction
+- Optional class weighting for mild imbalance
+- Gradient accumulation for effective larger batch sizes
+- Clear error messages for validation failures
 
-- Time spent: ~12–14 hours across 7 days (setup, coding, debugging, documentation).
-- Scope: Minimal but complete baseline; prioritized correctness, clarity, and reproducibility.
+## Requirements
 
-### ✅ What Works Today
+- Python ≥ 3.10
+- PyTorch ≥ 2.0
+- PyTorch Geometric ≥ 2.3
+- See [requirements.txt](requirements.txt) for complete list
 
-- End‑to‑end training and evaluation on ENZYMES (auto‑downloaded).
-- Best‑model checkpointing and summary report.
-- Plots: training curves and confusion matrix.
-- CPU and CUDA support (with guarded seeding).
+## Quick Start
 
-### ⚠️ Known Limitations
-
-- Single model/baseline only (no cross‑validation or hyperparameter search).
-- Fixed 80/20 split; no stratification.
-- Confusion‑matrix labels assume 6 classes.
-- Training prints use a second pass on the train set for accuracy (can be optimized).
-
-### ⚡ Quick Setup (Student Version)
+### 1. Setup Environment
 
 ```bash
-# 1) Create venv (Windows PowerShell)
+# Create virtual environment
 python -m venv .venv
-. .venv\Scripts\Activate.ps1
 
-# 2) Install Torch (CPU or CUDA 11.8)
-pip install --upgrade pip
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-# or: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+# Activate (Windows)
+.venv\Scripts\activate
 
-# 3) Install PyG deps (match your Torch choice)
-pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
-pip install torch-geometric
-
-# 4) Other deps
-pip install numpy scikit-learn matplotlib seaborn
-
-# 5) Quick test (1–2 min)
-python test_local.py
-
-# 6) Full training (5–10 min)
-python main.py
-```
-
-### 📈 Results Snapshot (Typical)
-
-- Best test accuracy: ~55–65% (baseline GCN on ENZYMES).
-- Outputs in `results/`: `best_model.pth`, `training_curves.png`, `confusion_matrix.png`, `training_history.npz`.
-
-### 🔭 Next Steps (If I Had More Time)
-
-- Add cross‑validation and stratified splits.
-- Track train accuracy during the training pass to halve per‑epoch compute.
-- Experiment with GIN/GraphSAGE and alternative pooling (max/sum/attention).
-- Add simple hyperparameter search and early stopping.
-
-### Dataset: ENZYMES
-
-- **Source**: BRENDA enzyme database via TUDataset
-- **Total Graphs**: 600 protein structures
-- **Classes**: 6 EC top-level enzyme classes
-  - EC1: Oxidoreductases
-  - EC2: Transferases
-  - EC3: Hydrolases
-  - EC4: Lyases
-  - EC5: Isomerases
-  - EC6: Ligases
-- **Node Features**: 3 per node (amino acid properties)
-
-## 🧠 Model Architecture
-
-### Graph Convolutional Network (GCN)
-
-```
-Input: Protein Graph (variable # nodes, 3 features per node)
-    ↓
-[GCN Layer 1] → ReLU → Dropout
-    ↓ (Message passing between neighboring nodes)
-[GCN Layer 2] → ReLU → Dropout
-    ↓ (Further neighborhood aggregation)
-[Global Mean Pool] → Aggregate all node features
-    ↓ (Creates fixed-size graph embedding)
-[Linear Classifier] → 6 class probabilities
-    ↓
-Output: Enzyme class (EC1-EC6)
-```
-
-### Key Components
-
-1. **GCN Layers**: Aggregate information from neighboring nodes
-   - Each node's representation is updated based on its neighbors
-   - Captures local structural patterns
-
-2. **Global Pooling**: Converts node-level features to graph-level
-   - Uses mean pooling to average all node embeddings
-   - Creates fixed-size representation regardless of graph size
-
-3. **Classifier**: Maps graph embedding to class probabilities
-   - Simple linear layer for 6-way classification
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Python 3.8 or higher
-- pip package manager
-
-### Installation
-
-1. **Clone the repository**:
-```bash
-git clone https://github.com/yourusername/enzyme-gcn-classifier.git
-cd enzyme-gcn-classifier
-```
-
-2. **Create and activate a virtual environment (recommended)**:
-```bash
-# Windows (PowerShell)
-python -m venv .venv
-. .venv\Scripts\Activate.ps1
-
-# macOS/Linux (bash)
-python -m venv .venv
+# Activate (Linux/macOS)
 source .venv/bin/activate
-```
 
-3. **Install PyTorch** (choose CPU or your CUDA version):
-```bash
-# CPU-only (all OS)
+# Install dependencies
 pip install --upgrade pip
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-
-# CUDA 11.8 (if you have a compatible NVIDIA GPU)
-pip install --upgrade pip
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
-```
-
-4. **Install PyTorch Geometric and its compiled deps**
-
-- Windows/macOS/Linux CPU (for Torch 2.0+):
-```bash
-pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
-pip install torch-geometric
-```
-
-- Windows/macOS/Linux CUDA 11.8:
-```bash
-pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cu118.html
-pip install torch-geometric
-```
-
-5. **Install remaining dependencies**:
-```bash
-pip install numpy scikit-learn matplotlib seaborn
-```
-
-Alternatively, try installing everything at once (may still require the specific PyG wheel URLs above on Windows):
-```bash
 pip install -r requirements.txt
 ```
 
-### Running the Code
+**Note**: PyTorch Geometric requires platform-specific installation. See [requirements.txt](requirements.txt) for detailed instructions.
 
-#### Quick Test (Recommended First!)
+### 2. Prepare Data
 
-Before running the full training, test your setup with a quick 10-epoch test:
-
-```bash
-python test_local.py
-```
-
-This will:
-- Verify all dependencies are installed correctly
-- Test data loading and model creation
-- Run a quick 10-epoch training (~1-2 minutes)
-- Confirm everything works before full training
-
-**Expected output**: All tests should show `[PASS]`
-
-#### Full Training
-
-Once the quick test passes, run the complete training:
+Convert the ENZYMES dataset to standardized CSV format:
 
 ```bash
-python main.py
+python -m src.cli prepare --root data --output data/raw/raw.csv
 ```
 
-The script will:
-1. Download the ENZYMES dataset automatically (first run only)
-2. Split data into 80% train / 20% test
-3. Train the GCN model for 200 epochs (~5-10 minutes)
-4. Evaluate on test set
-5. Save results to `./results/` directory
+This creates:
+- `data/raw/raw.csv`: Protein sequences with labels
+- `data/raw/class_mapping.json`: Label to class name mapping
 
-### Local Testing
+### 3. Train Model
 
-**For detailed testing instructions**, see [TESTING_GUIDE.md](TESTING_GUIDE.md)
-
-#### Quick Start Testing
-
+**Quick test (30 samples, 10 epochs)**:
 ```bash
-# 1. Quick test (1-2 minutes)
-python test_local.py
-
-# 2. Full training (5-10 minutes)
-python main.py
-
-# 3. View results
-ls results/
-# Should show: best_model.pth, training_curves.png, confusion_matrix.png, training_history.npz
+python -m src.cli train --model gcn --epochs 10 --batch_size 8 --limit_n 30
 ```
 
-#### Verify Results
-
-**On Windows**:
+**Full training (200 epochs)**:
 ```bash
-start results/training_curves.png
-start results/confusion_matrix.png
+python -m src.cli train --model gcn --epochs 200 --batch_size 8 --seed 42
 ```
 
-**On Mac/Linux**:
+**Alternative model (GraphSAGE)**:
 ```bash
-open results/training_curves.png
-open results/confusion_matrix.png
+python -m src.cli train --model sage --epochs 200 --batch_size 8
 ```
 
-### Expected Output
+### 4. View Results
 
-```
-======================================================================
- ENZYME GCN CLASSIFIER - TRAINING
-======================================================================
+Training outputs are saved to `runs/run_<timestamp>/`:
+- `metrics.json`: Test accuracy, macro-F1, per-class F1, confusion matrix
+- `best_model.pt`: Best model checkpoint (by validation macro-F1)
+- `train.log`: Training log file
 
-Using device: cuda
-
-======================================================================
-Loading ENZYMES dataset...
-Dataset: ENZYMES(600)
-Number of graphs: 600
-Number of features: 3
-Number of classes: 6
-
-Train set: 480 graphs
-Test set: 120 graphs
-
-======================================================================
-INITIALIZING MODEL
-======================================================================
-
-EnzymeGCN(
-  (conv1): GCNConv(3, 64)
-  (conv2): GCNConv(64, 64)
-  (lin): Linear(in_features=64, out_features=6, bias=True)
-)
-
-Total trainable parameters: 4,678
-
-======================================================================
-TRAINING START
-======================================================================
-
-Epoch    Train Loss   Train Acc    Test Loss    Test Acc     Time
-----------------------------------------------------------------------
-1        1.7856       0.2333       1.7523       0.2583       2.45s
-10       1.5234       0.4167       1.4987       0.4250       2.31s
-...
-200      0.4523       0.8542       0.6234       0.6417       2.28s
-----------------------------------------------------------------------
-
-Training completed in 458.23 seconds (7.64 minutes)
-Best test accuracy: 0.6500 (65.00%)
-
-======================================================================
-FINAL EVALUATION ON TEST SET
-======================================================================
-
-Test Loss: 0.6234
-Test Accuracy: 0.6417 (64.17%)
-
-============================================================
-CLASSIFICATION REPORT
-============================================================
-              precision    recall  f1-score   support
-
-         EC1       0.67      0.71      0.69        21
-         EC2       0.62      0.58      0.60        19
-         EC3       0.68      0.72      0.70        25
-         EC4       0.59      0.55      0.57        20
-         EC5       0.65      0.68      0.67        19
-         EC6       0.63      0.62      0.63        16
-
-    accuracy                           0.64       120
-   macro avg       0.64      0.64      0.64       120
-weighted avg       0.64      0.64      0.64       120
-
-Training curves saved to results/training_curves.png
-Confusion matrix saved to results/confusion_matrix.png
-Model saved to results/best_model.pth
-Training history saved to results/training_history.npz
-
-======================================================================
-SUMMARY
-======================================================================
-Dataset: ENZYMES (600 protein graphs, 6 classes)
-Model: GCN with 4,678 parameters
-Training time: 458.23 seconds
-Best test accuracy: 65.00%
-
-Results saved in './results/' directory:
-  - best_model.pth (trained model)
-  - training_history.npz (loss/accuracy curves)
-  - training_curves.png (visualization)
-  - confusion_matrix.png (classification performance)
-======================================================================
-
-Training complete! Check the results directory for outputs.
-```
-
-## 📊 Results
-
-After training, check the `results/` directory for:
-
-1. **best_model.pth**: Trained model weights
-2. **training_curves.png**: Loss and accuracy plots over epochs
-3. **confusion_matrix.png**: Per-class classification performance
-4. **training_history.npz**: Raw training data (for further analysis)
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 enzyme-gcn-classifier/
-├── main.py                 # Main training script
-├── model.py               # GCN model definition
-├── utils.py               # Helper functions (data loading, evaluation)
-├── requirements.txt       # Dependencies
-├── README.md             # This file
-├── data/                 # Dataset (auto-downloaded)
-│   └── ENZYMES/
-└── results/              # Training outputs
-    ├── best_model.pth
-    ├── training_curves.png
-    ├── confusion_matrix.png
-    └── training_history.npz
+├── src/                      # Main package
+│   ├── __init__.py
+│   ├── config.py             # Configuration dataclasses
+│   ├── data_schema.py        # Data validation schemas
+│   ├── featurize.py          # Amino acid featurization
+│   ├── build_graph.py        # Graph construction
+│   ├── datasets.py           # PyG dataset implementation
+│   ├── splits.py             # Train/val/test splitting
+│   ├── model_gnn.py          # GCN and GraphSAGE models
+│   ├── losses.py             # Loss functions
+│   ├── metrics.py            # Evaluation metrics
+│   ├── train.py              # Training loop
+│   ├── cli.py                # Command-line interface
+│   ├── utils_seed.py         # Reproducibility utilities
+│   └── utils_logging.py      # Logging configuration
+├── tests/                    # Unit tests
+├── scripts/                  # Utility scripts
+│   └── prepare_data.py       # Data preparation
+├── data/                     # Data directories
+│   ├── raw/                  # Raw CSV data
+│   ├── processed/            # Processed graphs (cached)
+│   ├── splits/               # Split indices
+│   └── demo/                 # Demo dataset
+├── runs/                     # Training outputs
+├── artifacts/                # Saved models
+├── docs/                     # Documentation
+├── notebooks/                # Jupyter notebooks
+├── pyproject.toml            # Tool configuration
+├── requirements.txt          # Dependencies
+├── Makefile                  # Build targets
+└── README.md                 # This file
 ```
 
-## 🔍 Understanding Graph Classification vs Node Classification
+## Graph Construction
 
-### Node Classification (Tutorial Example)
-- **Input**: One large graph (e.g., social network)
-- **Output**: Label for each node (e.g., user category)
-- **Example**: Classifying each person in a social network
+Since 3D structures are not available, graphs are constructed from sequence indices:
 
-### Graph Classification (This Project)
-- **Input**: Many small graphs (e.g., molecules, proteins)
-- **Output**: Label for entire graph (e.g., protein function)
-- **Key difference**: Need **global pooling** to aggregate node features
-- **Example**: Classifying proteins by their enzymatic function
+### Edges
+1. **Window Edges**: Connect residues within a sliding window (default: w=10)
+2. **KNN Edges**: Connect each residue to k nearest neighbors in index space (default: k=5)
+3. **Self-loops**: Added for stability
 
-## 🧪 How GCN Works
+### Node Features (23-dimensional)
+1. **One-hot encoding**: 20 dimensions (one per standard amino acid)
+2. **Physicochemical flags**: 3 binary flags
+   - Hydrophobic: A, V, I, L, M, F, W, P
+   - Aromatic: F, W, Y
+   - Charged: D, E, K, R, H
 
-### Message Passing (Simplified)
+### Edge Features (optional)
+- Absolute index distance, clipped to maximum of 20
 
-For each GCN layer:
-1. Each node looks at its neighbors
-2. Aggregates neighbor features (weighted by graph structure)
-3. Combines with its own features
-4. Applies transformation (learned weights)
+## Model Architecture
 
-```python
-# Conceptual formula for GCN
-h_new[node] = σ(W * mean(h_old[neighbors]))
+### GCN Variant (default)
+```
+Input: Graph (variable nodes, 23 features/node)
+  ↓
+[GCNConv 23→128] → BatchNorm → ReLU → Dropout(0.5)
+  ↓
+[GCNConv 128→256] → BatchNorm → ReLU → Dropout(0.5)
+  ↓
+[GCNConv 256→256] → BatchNorm → ReLU → Dropout(0.5)
+  ↓
+GlobalMeanPool || GlobalMaxPool  →  [512-dim concat]
+  ↓
+Linear(512→256) → GELU → Dropout(0.5)
+  ↓
+Linear(256→128) → GELU → Dropout(0.5)
+  ↓
+Linear(128→6)  →  6 class logits
 ```
 
-Where:
-- `h_new[node]` = new node representation
-- `h_old[neighbors]` = neighbor representations
-- `W` = learnable weight matrix
-- `σ` = activation function (ReLU)
+### Training Configuration
+- **Optimizer**: AdamW (lr=1e-3, weight_decay=1e-4)
+- **Scheduler**: ExponentialLR (gamma=0.98)
+- **Loss**: Cross-entropy with label smoothing (0.05)
+- **Early Stopping**: Patience=20 epochs on validation macro-F1
+- **Gradient Clipping**: max_norm=2.0
 
-After 2 layers, each node has information from 2-hop neighbors!
+## Expected Performance
 
-### Global Pooling
-
-```python
-# Mean pooling: average all node features
-graph_embedding = mean(all_node_features)
-
-# This creates a fixed-size vector for any graph size
-```
-
-## ⚙️ Configuration and Hyperparameters
-
-Edit hyperparameters in `main.py`:
-
-```python
-BATCH_SIZE = 32
-HIDDEN_CHANNELS = 64
-LEARNING_RATE = 0.01
-NUM_EPOCHS = 200
-DROPOUT = 0.5
-TEST_SPLIT = 0.2
-SEED = 42
-```
-
-- **Device**: Automatically selects CUDA if available, else CPU.
-- **Reproducibility**: Random seeds set; CUDA seeding is guarded to avoid CPU-only errors.
-- **Results**: Saved to `results/` including model weights and plots.
-
-## 🧾 Changelog
-
-- 2025-10-17
-  - **Fixed** dataset split bug in `utils.load_enzyme_dataset()` to avoid overlapping/omitted samples.
-  - **Fixed** unconditional CUDA seeding in `main.py`; now guarded by `torch.cuda.is_available()`.
-  - **Improved** robustness by initializing `best_model_state` before training to avoid `None` load state.
-  - **Updated** README installation instructions with Windows-friendly PyG wheel links and virtualenv setup.
-
-## 🎯 Expected Performance
-
-- **Random Baseline**: ~16.7% (1/6 classes)
-- **Simple GCN (this implementation)**: 55-65%
-- **State-of-the-art GNN**: 65-75%
+- **Random Baseline**: ~16.7% accuracy (1/6 classes)
+- **Bag-of-k-mers Baseline**: TBD (run baselines.py)
+- **GCN (this implementation)**: Target macro-F1 > 0.55
 
 Performance depends on:
-- Model architecture (depth, hidden size)
-- Training hyperparameters
-- Data preprocessing
 - Random initialization
+- Hyperparameters
+- Data preprocessing
+- Graph construction strategy
 
-## 🛠️ Customization
+## Development
 
-### Modify Hyperparameters
+### Run Tests
+```bash
+# All tests
+pytest tests/ -v
 
-Edit `main.py`:
-
-```python
-BATCH_SIZE = 32           # Increase for faster training
-HIDDEN_CHANNELS = 64      # Increase for more capacity
-LEARNING_RATE = 0.01      # Adjust for convergence
-NUM_EPOCHS = 200          # More epochs for better training
-DROPOUT = 0.5             # Regularization strength
+# With coverage
+pytest tests/ --cov=src --cov-report=html
 ```
 
-### Try Different Pooling Methods
+### Code Quality
+```bash
+# Format code
+make format
 
-In `model.py`, replace `global_mean_pool` with:
+# Lint
+make lint
 
-```python
-from torch_geometric.nn import global_max_pool, global_add_pool
+# Type check
+make typecheck
 
-# In forward():
-x = global_max_pool(x, batch)  # Max pooling
-# or
-x = global_add_pool(x, batch)  # Sum pooling
+# All checks
+make all
 ```
 
-### Add More GCN Layers
+## Troubleshooting
 
-```python
-self.conv3 = GCNConv(hidden_channels, hidden_channels)
+### PyTorch Geometric Installation Issues
 
-# In forward():
-x = self.conv3(x, edge_index)
-x = F.relu(x)
+**Problem**: Installation fails on Windows
+
+**Solution**: Install PyTorch first, then use platform-specific wheel URLs:
+
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
+pip install torch-geometric
 ```
 
-## 📚 References
+### Out of Memory
 
-1. **Kipf & Welling (2017)**: [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907)
-2. **PyTorch Geometric**: [Documentation](https://pytorch-geometric.readthedocs.io/)
-3. **ENZYMES Dataset**: [TUDataset Collection](https://chrsmrrs.github.io/datasets/)
-4. **Borgwardt et al. (2005)**: Protein function prediction via graph kernels
+**Problem**: CUDA out of memory during training
 
-## 🤝 Contributing
+**Solutions**:
+1. Reduce batch size: `--batch_size 4`
+2. Use smaller model: `hidden_dims=[64, 128, 128]` in config
+3. Enable gradient accumulation (future feature)
+4. Use CPU: `--device cpu`
 
-This is a course assignment project. For educational purposes, feel free to:
-- Experiment with different architectures
-- Try other GNN models (GAT, GraphSAGE, GIN)
-- Implement cross-validation
-- Add more evaluation metrics
+### Low Accuracy (<40%)
 
-## 📝 License
+**Potential Causes**:
+1. Check data preparation: Ensure labels are correct
+2. Verify split stratification: Check label distribution in logs
+3. Try different learning rate: Modify in config
+4. Increase training epochs
+5. Try GraphSAGE: `--model sage`
 
-MIT License - feel free to use for educational purposes.
+## Citation
 
-## ❓ Troubleshooting
+If you use this code for academic purposes, please cite:
 
-- **[PyTorch Geometric install fails on Windows]**
-  - Ensure you installed Torch first (CPU or CUDA), then PyG deps from the correct wheel index:
-  ```bash
-  # Example for CPU
-  pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-  pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
-  pip install torch-geometric
-  ```
+```
+@software{enzyme_gcn_classifier,
+  author = {Your Name},
+  title = {Enzyme GCN Classifier},
+  year = {2025},
+  url = {https://github.com/DandaAkhilReddy/GNN}
+}
+```
 
-- **[CUDA out of memory]**
-  - Reduce batch size in `main.py`:
-  ```python
-  BATCH_SIZE = 16  # or lower
-  ```
+## Future Work
 
-- **[Dataset download fails]**
-  - Download manually from [TUDataset](https://www.chrsmrrs.com/graphkerneldatasets/ENZYMES.zip) and extract to `./data/ENZYMES/`
+The following enhancements are noted but not implemented in this version:
 
-- **[Low accuracy (<40%)]**
-  - Try: lower learning rate, train longer, increase `HIDDEN_CHANNELS`, or verify splits/logs.
-  - Confirm the split is 80/20 and the dataset is shuffled (handled in `utils.load_enzyme_dataset()`).
+- **Contact Maps**: Incorporate 3D structural information when available
+- **Pre-trained Embeddings**: Use ESM or ProtBERT embeddings as node features
+- **Attention Mechanisms**: Implement graph attention networks (GAT)
+- **Multi-task Learning**: Predict EC sub-classes simultaneously
+- **Interpretability**: Attention weights and graph visualization
+- **Hyperparameter Optimization**: Automated search with Optuna
+- **ONNX Export**: Full inference pipeline export
+
+## License
+
+MIT License. See [LICENSE](LICENSE) for details.
+
+## Acknowledgments
+
+- **ENZYMES Dataset**: TUDataset collection
+- **PyTorch Geometric**: Graph neural network framework
+- **Community**: Open-source contributors
 
 ---
 
-**Author**: [Your Name]
-**Course**: [Course Name]
-**Date**: 2025
-
-For questions or issues, please open a GitHub issue or contact [your-email].
+**Author**: Your Name
+**Contact**: your.email@example.com
+**Repository**: https://github.com/DandaAkhilReddy/GNN

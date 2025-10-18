@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(git add -A)",
-      "Bash(git commit -m \"chore: Save current working state before refactoring\n\n- Modified README.md with updated documentation\n- Updated main.py and utils.py with improvements\n- Preparing for comprehensive refactoring into src/ package structure\")"
+      "Bash(git commit -m \"chore: Save current working state before refactoring\n\n- Modified README.md with updated documentation\n- Updated main.py and utils.py with improvements\n- Preparing for comprehensive refactoring into src/ package structure\")",
+      "Bash(git checkout -b gnn-refactor)",
+      "Bash(mkdir -p src tests scripts docs notebooks data/raw data/processed data/splits data/demo runs artifacts .github/workflows)"
     ],
     "deny": [],
     "ask": []
