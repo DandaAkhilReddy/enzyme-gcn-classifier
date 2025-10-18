@@ -42,7 +42,8 @@ def main():
 
     # Set random seeds for reproducibility
     torch.manual_seed(SEED)
-    torch.cuda.manual_seed(SEED)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(SEED)
 
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -83,8 +84,8 @@ def main():
     train_accs = []
     test_losses = []
     test_accs = []
-    best_test_acc = 0
-    best_model_state = None
+    best_test_acc = -1.0
+    best_model_state = model.state_dict().copy()
 
     # ========== Training Loop ==========
     print("\n" + "="*70)

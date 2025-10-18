@@ -1,6 +1,6 @@
-# Enzyme GCN Classifier 🧬
+# Enzyme GCN Classifier 🧬 — 1‑Week Student Project
 
-A Graph Convolutional Network (GCN) implementation for classifying enzyme protein structures into 6 EC (Enzyme Commission) classes using PyTorch Geometric.
+A small, focused GCN project completed in ~1 week. It classifies enzyme protein graphs into 6 EC classes using PyTorch Geometric.
 
 ## 📋 Project Overview
 
@@ -10,6 +10,75 @@ This project implements a **graph-level classification** task using Graph Neural
 - **Node features** contain chemical/structural properties
 
 The model learns to classify entire protein graphs into one of 6 enzyme classes.
+
+---
+
+## 🗓️ What I Built This Week
+
+- **Goal**: Build a working graph classification pipeline end‑to‑end on the ENZYMES dataset.
+- **Deliverables**:
+  - `model.py`: 2‑layer GCN with global mean pooling and `log_softmax` outputs.
+  - `utils.py`: Data loading, training/eval loops, plots, and result saving.
+  - `main.py`: 200‑epoch training script with best‑model tracking and final reports.
+  - `test_local.py`: 10‑epoch smoke test to validate environment and training loop.
+  - Plots and outputs saved to `results/`.
+
+### ⏱️ Time & Scope
+
+- Time spent: ~12–14 hours across 7 days (setup, coding, debugging, documentation).
+- Scope: Minimal but complete baseline; prioritized correctness, clarity, and reproducibility.
+
+### ✅ What Works Today
+
+- End‑to‑end training and evaluation on ENZYMES (auto‑downloaded).
+- Best‑model checkpointing and summary report.
+- Plots: training curves and confusion matrix.
+- CPU and CUDA support (with guarded seeding).
+
+### ⚠️ Known Limitations
+
+- Single model/baseline only (no cross‑validation or hyperparameter search).
+- Fixed 80/20 split; no stratification.
+- Confusion‑matrix labels assume 6 classes.
+- Training prints use a second pass on the train set for accuracy (can be optimized).
+
+### ⚡ Quick Setup (Student Version)
+
+```bash
+# 1) Create venv (Windows PowerShell)
+python -m venv .venv
+. .venv\Scripts\Activate.ps1
+
+# 2) Install Torch (CPU or CUDA 11.8)
+pip install --upgrade pip
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# or: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+
+# 3) Install PyG deps (match your Torch choice)
+pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
+pip install torch-geometric
+
+# 4) Other deps
+pip install numpy scikit-learn matplotlib seaborn
+
+# 5) Quick test (1–2 min)
+python test_local.py
+
+# 6) Full training (5–10 min)
+python main.py
+```
+
+### 📈 Results Snapshot (Typical)
+
+- Best test accuracy: ~55–65% (baseline GCN on ENZYMES).
+- Outputs in `results/`: `best_model.pth`, `training_curves.png`, `confusion_matrix.png`, `training_history.npz`.
+
+### 🔭 Next Steps (If I Had More Time)
+
+- Add cross‑validation and stratified splits.
+- Track train accuracy during the training pass to halve per‑epoch compute.
+- Experiment with GIN/GraphSAGE and alternative pooling (max/sum/attention).
+- Add simple hyperparameter search and early stopping.
 
 ### Dataset: ENZYMES
 
@@ -70,29 +139,48 @@ git clone https://github.com/yourusername/enzyme-gcn-classifier.git
 cd enzyme-gcn-classifier
 ```
 
-2. **Install PyTorch** (choose one based on your system):
-
-For **CPU only**:
+2. **Create and activate a virtual environment (recommended)**:
 ```bash
-pip install torch torchvision
+# Windows (PowerShell)
+python -m venv .venv
+. .venv\Scripts\Activate.ps1
+
+# macOS/Linux (bash)
+python -m venv .venv
+source .venv/bin/activate
 ```
 
-For **GPU (CUDA 11.8)**:
+3. **Install PyTorch** (choose CPU or your CUDA version):
 ```bash
+# CPU-only (all OS)
+pip install --upgrade pip
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+# CUDA 11.8 (if you have a compatible NVIDIA GPU)
+pip install --upgrade pip
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
 ```
 
-3. **Install PyTorch Geometric**:
+4. **Install PyTorch Geometric and its compiled deps**
+
+- Windows/macOS/Linux CPU (for Torch 2.0+):
 ```bash
+pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
 pip install torch-geometric
 ```
 
-4. **Install other dependencies**:
+- Windows/macOS/Linux CUDA 11.8:
+```bash
+pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cu118.html
+pip install torch-geometric
+```
+
+5. **Install remaining dependencies**:
 ```bash
 pip install numpy scikit-learn matplotlib seaborn
 ```
 
-Or install everything at once:
+Alternatively, try installing everything at once (may still require the specific PyG wheel URLs above on Windows):
 ```bash
 pip install -r requirements.txt
 ```
@@ -326,6 +414,32 @@ graph_embedding = mean(all_node_features)
 # This creates a fixed-size vector for any graph size
 ```
 
+## ⚙️ Configuration and Hyperparameters
+
+Edit hyperparameters in `main.py`:
+
+```python
+BATCH_SIZE = 32
+HIDDEN_CHANNELS = 64
+LEARNING_RATE = 0.01
+NUM_EPOCHS = 200
+DROPOUT = 0.5
+TEST_SPLIT = 0.2
+SEED = 42
+```
+
+- **Device**: Automatically selects CUDA if available, else CPU.
+- **Reproducibility**: Random seeds set; CUDA seeding is guarded to avoid CPU-only errors.
+- **Results**: Saved to `results/` including model weights and plots.
+
+## 🧾 Changelog
+
+- 2025-10-17
+  - **Fixed** dataset split bug in `utils.load_enzyme_dataset()` to avoid overlapping/omitted samples.
+  - **Fixed** unconditional CUDA seeding in `main.py`; now guarded by `torch.cuda.is_available()`.
+  - **Improved** robustness by initializing `best_model_state` before training to avoid `None` load state.
+  - **Updated** README installation instructions with Windows-friendly PyG wheel links and virtualenv setup.
+
 ## 🎯 Expected Performance
 
 - **Random Baseline**: ~16.7% (1/6 classes)
@@ -396,32 +510,27 @@ MIT License - feel free to use for educational purposes.
 
 ## ❓ Troubleshooting
 
-### Issue: PyTorch Geometric installation fails
+- **[PyTorch Geometric install fails on Windows]**
+  - Ensure you installed Torch first (CPU or CUDA), then PyG deps from the correct wheel index:
+  ```bash
+  # Example for CPU
+  pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+  pip install torch-scatter torch-sparse torch-cluster -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
+  pip install torch-geometric
+  ```
 
-**Solution**: Install dependencies separately:
-```bash
-pip install torch
-pip install torch-geometric
-```
+- **[CUDA out of memory]**
+  - Reduce batch size in `main.py`:
+  ```python
+  BATCH_SIZE = 16  # or lower
+  ```
 
-### Issue: CUDA out of memory
+- **[Dataset download fails]**
+  - Download manually from [TUDataset](https://www.chrsmrrs.com/graphkerneldatasets/ENZYMES.zip) and extract to `./data/ENZYMES/`
 
-**Solution**: Reduce batch size in `main.py`:
-```python
-BATCH_SIZE = 16  # or lower
-```
-
-### Issue: Dataset download fails
-
-**Solution**: Download manually from [TUDataset](https://www.chrsmrrs.com/graphkerneldatasets/ENZYMES.zip) and extract to `./data/ENZYMES/`
-
-### Issue: Low accuracy (<40%)
-
-**Possible causes**:
-- Learning rate too high/low
-- Not enough epochs
-- Model too simple
-- Check data loading is correct
+- **[Low accuracy (<40%)]**
+  - Try: lower learning rate, train longer, increase `HIDDEN_CHANNELS`, or verify splits/logs.
+  - Confirm the split is 80/20 and the dataset is shuffled (handled in `utils.load_enzyme_dataset()`).
 
 ---
 

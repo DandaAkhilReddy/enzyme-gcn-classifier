@@ -47,7 +47,7 @@ def load_enzyme_dataset(root='./data', batch_size=32, test_split=0.2, seed=42):
     train_size = len(dataset) - test_size
 
     train_dataset = dataset[:train_size]
-    test_dataset = dataset[test_size:]
+    test_dataset = dataset[train_size:]
 
     print(f"\nTrain set: {len(train_dataset)} graphs")
     print(f"Test set: {len(test_dataset)} graphs")
