@@ -99,7 +99,25 @@ pip install -r requirements.txt
 
 ### Running the Code
 
-Simply run the main training script:
+#### Quick Test (Recommended First!)
+
+Before running the full training, test your setup with a quick 10-epoch test:
+
+```bash
+python test_local.py
+```
+
+This will:
+- Verify all dependencies are installed correctly
+- Test data loading and model creation
+- Run a quick 10-epoch training (~1-2 minutes)
+- Confirm everything works before full training
+
+**Expected output**: All tests should show `[PASS]`
+
+#### Full Training
+
+Once the quick test passes, run the complete training:
 
 ```bash
 python main.py
@@ -108,9 +126,41 @@ python main.py
 The script will:
 1. Download the ENZYMES dataset automatically (first run only)
 2. Split data into 80% train / 20% test
-3. Train the GCN model for 200 epochs
+3. Train the GCN model for 200 epochs (~5-10 minutes)
 4. Evaluate on test set
 5. Save results to `./results/` directory
+
+### Local Testing
+
+**For detailed testing instructions**, see [TESTING_GUIDE.md](TESTING_GUIDE.md)
+
+#### Quick Start Testing
+
+```bash
+# 1. Quick test (1-2 minutes)
+python test_local.py
+
+# 2. Full training (5-10 minutes)
+python main.py
+
+# 3. View results
+ls results/
+# Should show: best_model.pth, training_curves.png, confusion_matrix.png, training_history.npz
+```
+
+#### Verify Results
+
+**On Windows**:
+```bash
+start results/training_curves.png
+start results/confusion_matrix.png
+```
+
+**On Mac/Linux**:
+```bash
+open results/training_curves.png
+open results/confusion_matrix.png
+```
 
 ### Expected Output
 
